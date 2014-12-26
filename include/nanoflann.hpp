@@ -896,7 +896,7 @@ namespace nanoflann
 			distance_vector_t dists; // fixed or variable-sized container (depending on DIM)
 			dists.assign((DIM>0 ? DIM : dim) ,0); // Fill it with zeros.
 			DistanceType distsq = computeInitialDistances(vec, dists);
-			searchLevel(result, vec, root_node, distsq, dists, epsError);  // "count_leaf" parameter removed since was neither used nor returned to the user.
+			searchLevel(result, vec, root_node, distsq, dists, epsError);
 		}
 
 		/**
@@ -1032,13 +1032,13 @@ namespace nanoflann
 
 				// compute bounding-box of leaf points
 				for (int i=0; i<(DIM>0 ? DIM : dim); ++i) {
-					bbox[i].low = dataset_get(vind[left],i);
-					bbox[i].high = dataset_get(vind[left],i);
+					bbox[i].high = bbox[i].low = dataset_get(vind[left],i);
 				}
 				for (IndexType k=left+1; k<right; ++k) {
 					for (int i=0; i<(DIM>0 ? DIM : dim); ++i) {
-						if (bbox[i].low>dataset_get(vind[k],i)) bbox[i].low=dataset_get(vind[k],i);
-						if (bbox[i].high<dataset_get(vind[k],i)) bbox[i].high=dataset_get(vind[k],i);
+						ElementType v=dataset_get(vind[k],i);
+						if (bbox[i].low>v) bbox[i].low=v;
+						if (bbox[i].high<v) bbox[i].high=v;
 					}
 				}
 			}
@@ -1070,6 +1070,57 @@ namespace nanoflann
 			return node;
 		}
 
+		/**
+		 * @brief Modified the index after the insertion of a new point (index=ind) to the dataset.
+		 * @param node Recursive insertion point (start with root)
+		 * @param ind Index of the new point (in the dataset)
+		 */
+		void addPointToTree(NodePtr node, IndexType ind)
+		{
+			//ElementType* point = dataset_get(ind[ind],cutfeat) points_[ind];
+			if ((node->child1==NULL) && (node->child2==NULL))
+			{
+				// We arrived to the leaf node:
+				ElementType* leaf_point = node->point;
+				ElementType max_span = 0;
+				size_t div_feat = 0;
+				for (size_t i=0;i<veclen_;++i) {
+					ElementType span = abs(point[i]-leaf_point[i]);
+					if (span > max_span) {
+						max_span = span;
+						div_feat = i;
+					}
+				}
+				NodePtr left = new(pool_) Node();
+				left->child1 = left->child2 = NULL;
+				NodePtr right = new(pool_) Node();
+				right->child1 = right->child2 = NULL;
+
+				if (point[div_feat]<leaf_point[div_feat]) {
+					left->divfeat = ind;
+					left->point = point;
+					right->divfeat = node->divfeat;
+					right->point = node->point;
+				}
+				else {
+					left->divfeat = node->divfeat;
+					left->point = node->point;
+					right->divfeat = ind;
+					right->point = point;
+				}
+				node->divfeat = div_feat;
+				node->divval = (point[div_feat]+leaf_point[div_feat])/2;
+				node->child1 = left;
+				node->child2 = right;
+			}
+			else
+			{
+				// Forward insertion downwards the tree:
+				if (dataset_get(ind,node->divfeat) < node->divval )
+					  addPointToTree(node->child1,ind);
+				else  addPointToTree(node->child2,ind);
+			}
+		}
 
 		void computeMinMax(IndexType* ind, IndexType count, int element, ElementType& min_elem, ElementType& max_elem)
 		{
