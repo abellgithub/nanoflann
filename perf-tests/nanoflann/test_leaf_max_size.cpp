@@ -35,7 +35,7 @@ using namespace std;
 using namespace nanoflann;
 
 // Comment-out for using random points:
-#define REAL_DATASET_FILE "scan_071_points.dat"
+//#define REAL_DATASET_FILE "scan_071_points.dat"
 
 //#define VERBOSE_OUTPUT
 
@@ -126,9 +126,10 @@ double get_time()
 	return tv.tv_sec+tv.tv_usec/1000000.0;
 }
 
-double my_random(const double min,const double max) 
+template <typename T>
+T my_random(const double min,const double max) 
 {
-	return min+(max-min)*(rand() % 1000) / 1000.0;
+	return static_cast<T>( min+(max-min)*(rand() % 1000) / 1000.0 );
 }
 
 template <typename T>
@@ -164,7 +165,7 @@ void perf_test(const size_t N, const size_t max_leaf_elements)
 	num_t query_pt[3] = { 0.5, 0.5, 0.5};
 #else
 	// Sample dataset is [-40,40]x[-40,40]x[0,15]: Query at random:
-	num_t query_pt[3] = { my_random(-40.0,40.0), my_random(-40.0,40.0), my_random(0,10)};
+	num_t query_pt[3] = { my_random<num_t>(-40.0,40.0), my_random<num_t>(-40.0,40.0), my_random<num_t>(0,10)};
 #endif
 
 	// construct an randomized kd-tree index using 4 kd-trees
@@ -213,7 +214,7 @@ int main(int argc, char** argv)
 	size_t MaxLeafs[]  = {  1,   2,   3,   4,   5,  10,  20,  50, 100, 500,1000, 10000};
 	for (size_t i=0;i<sizeof(MaxLeafs)/sizeof(MaxLeafs[0]);i++)
 	{
-		const size_t nPts = 1e5;
+		const size_t nPts = 100000;
 		const size_t nReps = 200;
 		const size_t maxLeaf = MaxLeafs[i];
 

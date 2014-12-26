@@ -1075,6 +1075,7 @@ namespace nanoflann
 		 * @param node Recursive insertion point (start with root)
 		 * @param ind Index of the new point (in the dataset)
 		 */
+#if 0
 		void addPointToTree(NodePtr node, IndexType ind)
 		{
 			//ElementType* point = dataset_get(ind[ind],cutfeat) points_[ind];
@@ -1121,6 +1122,7 @@ namespace nanoflann
 				else  addPointToTree(node->child2,ind);
 			}
 		}
+#endif 
 
 		void computeMinMax(IndexType* ind, IndexType count, int element, ElementType& min_elem, ElementType& max_elem)
 		{

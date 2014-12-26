@@ -172,9 +172,9 @@ void perf_test(const size_t N)
 int main(int argc, char** argv)
 {
 	// Number of points
-	size_t Ns[]     = {1e3, 5e3, 1e4, 5e4, 1e5, 2e5, 5e5, 7e5, 1e6, 2e6, 5e6};
+	size_t Ns[]     = {1000, 5000, 10000, 50000, 100000, 200000, 500000, 700000, 1000000, 2000000, 5000000};
 	// And repetitions for each point cloud size:
-	size_t nReps[]  = {1e4, 1e3, 100, 100,  50,  50,  50,  20,  20,  10,  10};
+	size_t nReps[]  = {10000, 1000, 100, 100,  50,  50,  50,  20,  20,  10,  10};
 	for (size_t i=0;i<sizeof(Ns)/sizeof(Ns[0]);i++)
 	{
 		cerr << " ==== N:" << Ns[i] << " ===\n"; cerr.flush();
